@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>首页</title>
+    <link rel="stylesheet" href="3rd/element-ui@2.13.2/lib/theme-chalk/index.css"/>
+</head>
+
+<body>
+<script src="3rd/vue.min.js"></script>
+<script src="3rd/element-ui@2.13.2/lib/index.js"></script>
+<script src="3rd/axios.min.js"></script>
+<div id="manage">
+    <template>
+        <el-table
+                :data="studentData.filter(data => !search || data.name.toLowerCase().includes(search.toLowerCase()))"
+                style="width: 100%">
+            <el-table-column
+                    label="学号"
+                    prop="id">
+            </el-table-column>
+            <el-table-column
+                    label="姓名"
+                    prop="name">
+            </el-table-column>
+            <el-table-column
+                    label="年龄"
+                    prop="age">
+            </el-table-column>
+            <el-table-column
+                    label="性别"
+                    prop="sex">
+            </el-table-column>
+            <el-table-column
+                    label="专业"
+                    prop="major">
+            </el-table-column>
+            <el-table-column
+                    label="年级"
+                    prop="grade">
+            </el-table-column>
+            <el-table-column
+                    label="密码"
+                    prop="password">
+            </el-table-column>
+
+            <el-table-column
+                    align="right">
+                <template slot="header" slot-scope="scope">
+                    <el-input
+                            v-model="search"
+                            size="mini"
+                            placeholder="输入关键字搜索"/>
+                </template>
+                <template slot-scope="scope">
+                    <el-button
+                            size="mini"
+                            @click="handleEdit(scope.$index, scope.row)">修改
+                    </el-button>
+                    <el-button
+                            size="mini"
+                            type="danger"
+                            @click="handleDelete(scope.$index, scope.row)">删除
+                    </el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+        <el-dialog title="删除学生信息" :visible.sync="deleteVisible">
+            <p>确定删除学生信息吗？</p>
+            <div style="text-align: right; margin: 0">
+                <el-button size="mini" type="text" @click="deleteVisible = false">取消</el-button>
+                <el-button type="primary" size="mini" @click="deleteStudent">确定</el-button>
+            </div>
+        </el-dialog>
+        <el-dialog title="更新学生信息" :visible.sync="editVisible">
+            <!-- 在el-dialog中进行嵌套el-form实现弹出表格的效果 -->
+            <el-form :model="editStudentData">
+                <el-form-item label="name">
+                    <el-input v-model="editStudentData.name" auto-complete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="age">
+                    <el-input v-model="editStudentData.age" auto-complete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="sex">
+                    <el-input v-model="editStudentData.sex" auto-complete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="major">
+                    <el-input v-model="editStudentData.major" auto-complete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="grade">
+                    <el-input v-model="editStudentData.grade" auto-complete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="password">
+                    <el-input v-model="editStudentData.password" auto-complete="off"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="editVisible = false">取 消</el-button>
+                <!-- 设置触发更新的方法 -->
+                <el-button type="primary" @click="editStudent">确 定</el-button>
+            </div>
+        </el-dialog>
+        <el-dialog title="添加学生信息" :visible.sync="addVisible">
+            <!-- 在el-dialog中进行嵌套el-form实现弹出表格的效果 -->
+            <el-form :model="editStudentData">
+                <el-form-item label="id">
+                    <el-input v-model="editStudentData.id" auto-complete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="name">
+                    <el-input v-model="editStudentData.name" auto-complete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="age">
+                    <el-input v-model="editStudentData.age" auto-complete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="sex">
+                    <el-input v-model="editStudentData.sex" auto-complete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="major">
+                    <el-input v-model="editStudentData.major" auto-complete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="grade">
+                    <el-input v-model="editStudentData.grade" auto-complete="off"></el-input>
+                </el-form-item>
+                <el-form-item label="password">
+                    <el-input v-model="editStudentData.password" auto-complete="off"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="addVisible = false">取 消</el-button>
+                <!-- 设置触发更新的方法 -->
+                <el-button type="primary" @click="addStudent">确 定</el-button>
+            </div>
+        </el-dialog>
+        <el-button @click="handleAdd">添加学生信息</el-button>
+    </template>
+</div>
+</body>
+
+<script>
+    Main = new Vue({
+        el: '#manage',
+        data() {
+            return {
+                studentData: [],
+                search: '',
+                deleteVisible: false,
+                editVisible: false,
+                addVisible: false,
+                currentIndex: 0,
+                currentRow: {},
+                editStudentData: {
+                    id: '',
+                    name: '',
+                    age: '',
+                    sex: '',
+                    major: '',
+                    grade: '',
+                    password: '',
+                }
+            };
+        },
+        methods: {
+            handleClick(tab, event) {
+                console.log(tab, event);
+            },
+            handleAdd() {
+                this.addVisible = true;
+            },
+            handleEdit(index, row) {
+                this.currentIndex = stu;
+                this.currentRow = row;
+                this.editVisible = true;
+                console.log(stu, row);
+            },
+            handleDelete(index, row) {
+                this.deleteVisible = true;
+                this.currentIndex = stu;
+                this.currentRow = row;
+                console.log(stu, row);
+            },
+            getStudents() {
+                axios.get("/stu/get").then(response => {
+                    this.studentData = response.data
+                });
+            },
+            editStudent() {
+                this.editVisible = false;
+                this.editStudentData.id = this.currentRow.id;
+                //    发到后端更新学生
+                axios.post("/stu/edit", this.editStudentData).then(response => {
+                    this.getStudents();
+                });
+                location.reload();
+            },
+            addStudent() {
+                this.addVisible = false;
+                //发送后端添加学生
+                axios.post("/stu/add", this.editStudentData).then(response => {
+                    this.getStudents();
+                });
+                location.reload();
+            },
+            deleteStudent() {
+                this.deleteVisible = false;
+                axios.post("/stu/delete", this.currentRow.id).then(response => {
+                    this.getStudents();
+                });
+                location.reload();
+            }
+        },
+        mounted() {
+            this.getStudents();
+        },
+    });
+</script>
+</html>

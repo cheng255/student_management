@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>分数管理</title>
+    <link rel="stylesheet" href="3rd/element-ui@2.13.2/lib/theme-chalk/index.css"/>
+</head>
+
+<body>
+<script src="3rd/vue.min.js"></script>
+<script src="3rd/element-ui@2.13.2/lib/index.js"></script>
+<script src="3rd/axios.min.js"></script>
+<div id="manage">
+    <template>
+        <el-button type="primary" @click="func(1)">按分数排序</el-button>
+        <el-button type="primary" @click="func(2)">按专业年级排序</el-button>
+        <el-button type="primary" @click="func(3)">按课程分数排序</el-button>
+        <el-table
+                :data="manageData.filter(data => !search || data.name.toLowerCase().includes(search.toLowerCase()))"
+                style="width: 100%">
+            <el-table-column
+                    label="学号"
+                    prop="id">
+            </el-table-column>
+            <el-table-column
+                    label="姓名"
+                    prop="name">
+            </el-table-column>
+            <el-table-column
+                    label="专业"
+                    prop="major">
+            </el-table-column>
+            <el-table-column
+                    label="年级"
+                    prop="grade">
+            </el-table-column>
+            <el-table-column
+                    label="课程"
+                    prop="course">
+            </el-table-column>
+            <el-table-column
+                    label="分数"
+                    prop="score">
+            </el-table-column>
+            <el-table-column
+                    align="right">
+                <template slot="header" slot-scope="scope">
+                    <el-input
+                            v-model="search"
+                            size="mini"
+                            placeholder="输入关键字搜索"/>
+                </template>
+            </el-table-column>
+        </el-table>
+
+
+    </template>
+
+</div>
+</body>
+<script>
+    Main = new Vue({
+        el: '#manage',
+        data() {
+            return {
+                manageData: [],
+                search: '',
+                state: 0,
+            };
+        },
+        methods: {
+            func(i) {
+                this.state = i;
+                this.getManages();
+            },
+            getManages() {
+                switch (this.state) {
+                    case 0:
+                        axios.get("/manage/get").then(response => {
+                            this.manageData = response.data
+                        });
+                        break;
+                    case 1:
+                        axios.get("/manage/get1").then(response => {
+                            this.manageData = response.data
+                        });
+                        break;
+                    case 2:
+                        axios.get("/manage/get2").then(response => {
+                            this.manageData = response.data
+                        });
+                        break;
+                    case 3:
+                        axios.get("/manage/get3").then(response => {
+                            this.manageData = response.data
+                        });
+                        break;
+                }
+
+            }
+        },
+        mounted() {
+            this.getManages();
+        },
+        create() {
+
+        }
+    });
+</script>
+</html>
